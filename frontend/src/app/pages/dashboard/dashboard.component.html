@@ -1,0 +1,77 @@
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">Gestion <span>RH</span></div>
+
+    <nav class="nav">
+      <button class="nav-item" [class.active]="active === 'absences'" (click)="select('absences')">
+        Mes absences
+      </button>
+      <button class="nav-item" [class.active]="active === 'conges'" (click)="select('conges')">
+        Mes congés
+      </button>
+      <button class="nav-item" [class.active]="active === 'emplois'" (click)="select('emplois')">
+        Mes emplois
+      </button>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="header">
+      <div>
+        <h2>Bienvenue dans votre espace de travail</h2>
+        <p class="subtitle">Sélectionnez une section à gauche pour charger vos données.</p>
+      </div>
+
+      <button class="refresh" (click)="refresh()">
+        Rafraîchir
+      </button>
+    </header>
+
+    <section class="content">
+      <div class="state error" *ngIf="error">{{ error }}</div>
+
+      <div class="state" *ngIf="!error && (!data || data.length === 0)">
+        Aucune donnée.
+      </div>
+
+      <div class="list" *ngIf="!error && data && data.length">
+        <div class="panel">
+          <div class="panel-title">Données</div>
+          <div class="panel-body">
+            <div class="raw-table" style="overflow:auto;">
+              <table style="width:100%; border-collapse: collapse;">
+                <thead>
+                  <tr>
+                    <th *ngFor="let c of rawColumns" style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">{{ c }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of data">
+                    <td *ngFor="let c of rawColumns" style="padding:8px; border-bottom:1px solid #f1f1f1;">{{ formatCell(getCell(row, c)) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #genericData>
+          <div class="raw-table" style="overflow:auto;">
+            <table style="width:100%; border-collapse: collapse;">
+              <thead>
+                <tr>
+                  <th *ngFor="let c of rawColumns" style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">{{ c }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of data">
+                  <td *ngFor="let c of rawColumns" style="padding:8px; border-bottom:1px solid #f1f1f1;">{{ formatCell(getCell(row, c)) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-template>
+      </div>
+    </section>
+  </main>
+</div>

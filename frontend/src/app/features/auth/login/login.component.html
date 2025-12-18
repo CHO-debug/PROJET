@@ -1,0 +1,64 @@
+<div class="page">
+  <form [formGroup]="form" (ngSubmit)="submit()" class="card">
+
+    <h2>Connexion</h2>
+
+    <!-- EMAIL -->
+    <label>
+      Email
+      <input
+        type="email"
+        formControlName="email"
+        placeholder="ex: user@email.com"
+      />
+    </label>
+    <div class="error" *ngIf="emailCtrl?.touched && emailCtrl?.invalid">
+      <span *ngIf="emailCtrl?.errors?.['required']">
+        Email requis
+      </span>
+      <span *ngIf="emailCtrl?.errors?.['email']">
+        Email invalide
+      </span>
+    </div>
+
+    <!-- PASSWORD -->
+    <label>
+      Mot de passe
+      <input
+        type="password"
+        formControlName="password"
+        placeholder="********"
+      />
+    </label>
+    <div class="error" *ngIf="passwordCtrl?.touched && passwordCtrl?.invalid">
+      <span *ngIf="passwordCtrl?.errors?.['required']">
+        Mot de passe requis
+      </span>
+      <span *ngIf="passwordCtrl?.errors?.['minlength']">
+        Minimum 4 caractères
+      </span>
+    </div>
+
+    <!-- BOUTON -->
+    <button type="submit" [disabled]="loading || form.invalid">
+      {{ loading ? 'Connexion...' : 'Se connecter' }}
+    </button>
+
+    <!-- ERREUR BACKEND -->
+    <div class="error" *ngIf="error">
+      {{ error }}
+    </div>
+
+    <!-- SUCCÈS -->
+    <div class="success" *ngIf="success">
+      {{ success }}
+    </div>
+
+    <!-- RÉPONSE BRUTE DU SERVEUR -->
+    <div class="success" *ngIf="response">
+      <strong>Réponse serveur :</strong>
+      <pre>{{ response | json }}</pre>
+    </div>
+
+  </form>
+</div>
