@@ -2,17 +2,25 @@ import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { take } from 'rxjs';
+import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 
 import { TokenService } from '../../core/services/token.service';
 
-type DashboardSection = 'absences' | 'conges' | 'emplois';
+type DashboardSection = 'absences' | 'conges' | 'emplois' | 'calendrier';
 
 type AbsenceResponseDto = {
   dateInterval?: string;
   libelle?: string;
   motif?: string;
   duree?: number;
+};
+
+type CalendarDay = {
+  day: number;
+  date: Date;
+  inMonth: boolean;
+  isToday: boolean;
 };
 
 @Component({
@@ -27,27 +35,114 @@ export class DashboardComponent {
   error: string | null = null;
   data: AbsenceResponseDto[] = [];
 
+  theme: 'light' | 'dark' = 'light';
+
+  sidebarOpen = false;
+
+  private calendarCursor = new Date();
+  calendarDays: CalendarDay[] = [];
+
+  getColumnLabel(col: string): string {
+    if (col === 'dateInterval') return 'Période';
+    return col;
+  }
+
   constructor(
     private readonly http: HttpClient,
     private readonly tokenService: TokenService,
-    private readonly cd: ChangeDetectorRef
+    private readonly cd: ChangeDetectorRef,
+    private readonly router: Router
   ) {
     this.load('absences');
+    this.buildCalendar();
+  }
+
+  toggleTheme(): void {
+    this.theme = this.theme === 'dark' ? 'light' : 'dark';
+  }
+
+  toggleSidebar(): void {
+    this.sidebarOpen = !this.sidebarOpen;
+  }
+
+  closeSidebar(): void {
+    this.sidebarOpen = false;
+  }
+
+  logout(): void {
+    this.tokenService.clearAll();
+    this.closeSidebar();
+    this.router.navigateByUrl('/login');
+  }
+
+  get pageTitle(): string {
+    if (this.active === 'absences') return 'Mes absences';
+    if (this.active === 'conges') return 'Mes congés';
+    if (this.active === 'emplois') return 'Mes emplois du temps';
+    return 'Calendrier';
   }
 
   select(section: DashboardSection) {
     if (this.active === section) {
-      this.load(section);
+      if (section !== 'calendrier') {
+        this.load(section);
+      }
       return;
     }
-    this.load(section);
+    if (section === 'calendrier') {
+      this.active = 'calendrier';
+      this.error = null;
+      this.data = [];
+      this.buildCalendar();
+    } else {
+      this.load(section);
+    }
+
+    this.closeSidebar();
   }
 
-  refresh() {
-    this.load(this.active);
+  get calendarTitle(): string {
+    return new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' }).format(this.calendarCursor);
   }
 
-  private load(section: DashboardSection) {
+  prevMonth(): void {
+    this.calendarCursor = new Date(this.calendarCursor.getFullYear(), this.calendarCursor.getMonth() - 1, 1);
+    this.buildCalendar();
+  }
+
+  nextMonth(): void {
+    this.calendarCursor = new Date(this.calendarCursor.getFullYear(), this.calendarCursor.getMonth() + 1, 1);
+    this.buildCalendar();
+  }
+
+  private buildCalendar(): void {
+    const y = this.calendarCursor.getFullYear();
+    const m = this.calendarCursor.getMonth();
+    const firstOfMonth = new Date(y, m, 1);
+
+    // Convert JS day (Sun=0) to Monday-based index (Mon=0..Sun=6)
+    const mondayIndex = (firstOfMonth.getDay() + 6) % 7;
+    const start = new Date(y, m, 1 - mondayIndex);
+
+    const today = new Date();
+    const todayKey = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+
+    const days: CalendarDay[] = [];
+    for (let i = 0; i < 42; i++) {
+      const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+      const key = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+      days.push({
+        day: d.getDate(),
+        date: d,
+        inMonth: d.getMonth() === m,
+        isToday: key === todayKey
+      });
+    }
+
+    this.calendarDays = days;
+  }
+
+  private load(section: Exclude<DashboardSection, 'calendrier'>) {
     this.active = section;
     this.error = null;
     this.data = [];

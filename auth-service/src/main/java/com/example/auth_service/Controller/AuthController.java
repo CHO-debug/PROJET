@@ -56,4 +56,16 @@ public class AuthController {
             return ResponseEntity.status(500).body("Erreur lors de la récupération : " + e.getMessage());
         }
     }
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(jakarta.servlet.http.HttpServletResponse response) {
+        // Supprime le cookie JWT en le mettant à null et en expirant immédiatement
+        jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("JWT", null);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0); // expire immédiatement
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok("Déconnexion réussie");
+    }
+
 }

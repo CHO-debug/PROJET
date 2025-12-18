@@ -1,76 +1,106 @@
-<div class="layout">
+<div class="layout" [class.theme-dark]="theme === 'dark'" [class.sidebar-open]="sidebarOpen">
+  <div class="overlay" *ngIf="sidebarOpen" (click)="closeSidebar()"></div>
+
   <aside class="sidebar">
-    <div class="brand">Gestion <span>RH</span></div>
+    <div class="brand">
+      <span class="brand-strong">HR</span><span class="brand-soft">MATE</span>
+    </div>
 
     <nav class="nav">
       <button class="nav-item" [class.active]="active === 'absences'" (click)="select('absences')">
-        Mes absences
+        <span class="nav-ico absences">📅</span>
+        <span class="nav-label">Mes absences</span>
       </button>
       <button class="nav-item" [class.active]="active === 'conges'" (click)="select('conges')">
-        Mes congés
+        <span class="nav-ico conges">🌴</span>
+        <span class="nav-label">Mes congés</span>
       </button>
       <button class="nav-item" [class.active]="active === 'emplois'" (click)="select('emplois')">
-        Mes emplois
+        <span class="nav-ico emplois">💼</span>
+        <span class="nav-label">Mes emplois</span>
+      </button>
+      <button class="nav-item" [class.active]="active === 'calendrier'" (click)="select('calendrier')">
+        <span class="nav-ico calendrier">🗓️</span>
+        <span class="nav-label">Calendrier</span>
       </button>
     </nav>
   </aside>
 
   <main class="main">
-    <header class="header">
-      <div>
-        <h2>Bienvenue dans votre espace de travail</h2>
-        <p class="subtitle">Sélectionnez une section à gauche pour charger vos données.</p>
+    <header class="topbar">
+      <button class="topbar-btn" type="button" (click)="toggleSidebar()">☰</button>
+      <div class="topbar-title"></div>
+      <div class="topbar-actions">
+        <button class="topbar-theme" type="button" (click)="toggleTheme()">
+          {{ theme === 'dark' ? '☀️' : '🌙' }}
+        </button>
+        <button class="topbar-logout" type="button" (click)="logout()">Logout</button>
+        <button class="topbar-fab" type="button">+</button>
       </div>
-
-      <button class="refresh" (click)="refresh()">
-        Rafraîchir
-      </button>
     </header>
 
-    <section class="content">
-      <div class="state error" *ngIf="error">{{ error }}</div>
+    <section class="page">
+      <div class="page-card">
+        <div class="page-card-header">
+          <div class="page-card-heading">{{ pageTitle }}</div>
+        </div>
 
-      <div class="state" *ngIf="!error && (!data || data.length === 0)">
-        Aucune donnée.
-      </div>
+        <ng-container *ngIf="active === 'calendrier'">
+          <div class="calendar">
+            <div class="calendar-header">
+              <button class="cal-nav" type="button" (click)="prevMonth()">‹</button>
+              <div class="cal-title">{{ calendarTitle }}</div>
+              <button class="cal-nav" type="button" (click)="nextMonth()">›</button>
+            </div>
 
-      <div class="list" *ngIf="!error && data && data.length">
-        <div class="panel">
-          <div class="panel-title">Données</div>
-          <div class="panel-body">
-            <div class="raw-table" style="overflow:auto;">
-              <table style="width:100%; border-collapse: collapse;">
+            <div class="cal-grid cal-dow">
+              <div class="cal-cell">Lun</div>
+              <div class="cal-cell">Mar</div>
+              <div class="cal-cell">Mer</div>
+              <div class="cal-cell">Jeu</div>
+              <div class="cal-cell">Ven</div>
+              <div class="cal-cell">Sam</div>
+              <div class="cal-cell">Dim</div>
+            </div>
+
+            <div class="cal-grid cal-days">
+              <ng-container *ngFor="let d of calendarDays">
+                <div
+                  class="cal-day"
+                  [class.muted]="!d.inMonth"
+                  [class.today]="d.isToday"
+                >
+                  {{ d.day }}
+                </div>
+              </ng-container>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="active !== 'calendrier'">
+          <div class="state error" *ngIf="error">{{ error }}</div>
+
+          <div class="state" *ngIf="!error && (!data || data.length === 0)">
+            Aucune donnée.
+          </div>
+
+          <div class="list" *ngIf="!error && data && data.length">
+            <div class="table-wrap">
+              <table class="data-table">
                 <thead>
                   <tr>
-                    <th *ngFor="let c of rawColumns" style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">{{ c }}</th>
+                    <th *ngFor="let c of rawColumns">{{ getColumnLabel(c) }}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr *ngFor="let row of data">
-                    <td *ngFor="let c of rawColumns" style="padding:8px; border-bottom:1px solid #f1f1f1;">{{ formatCell(getCell(row, c)) }}</td>
+                    <td *ngFor="let c of rawColumns">{{ formatCell(getCell(row, c)) }}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
-        </div>
-
-        <ng-template #genericData>
-          <div class="raw-table" style="overflow:auto;">
-            <table style="width:100%; border-collapse: collapse;">
-              <thead>
-                <tr>
-                  <th *ngFor="let c of rawColumns" style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">{{ c }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let row of data">
-                  <td *ngFor="let c of rawColumns" style="padding:8px; border-bottom:1px solid #f1f1f1;">{{ formatCell(getCell(row, c)) }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </ng-template>
+        </ng-container>
       </div>
     </section>
   </main>

@@ -80,18 +80,6 @@ public class RhController {
         return ResponseEntity.ok(rhService.createEmploi(rhId, emploiTemps));
     }
 
-    @DeleteMapping("/emplois/{emploiId}")
-    public ResponseEntity<String> deleteEmploi(
-            @RequestHeader("X-User-Id") String rhId,
-            @PathVariable String emploiId) {
-
-        boolean deleted = rhService.deleteEmploi(rhId, emploiId);
-        if (deleted) {
-            return ResponseEntity.ok("Emploi supprimé avec succès");
-        } else {
-            return ResponseEntity.status(403).body("Impossible de supprimer cet emploi");
-        }
-    }
 
     @GetMapping("/emplois/employe/{employeId}")
     public ResponseEntity<List<EmploiTempsDTO>> getEmploiByEmploye(@PathVariable String employeId) {

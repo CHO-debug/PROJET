@@ -1,14 +1,12 @@
 package com.example.micro_emploi.services;
 
 import com.example.micro_emploi.dto.EmploiTempsSimpleDTO;
-import com.example.micro_emploi.dto.EmployeEmploiDTO;
 import com.example.micro_emploi.entities.EmploiTemps;
 import com.example.micro_emploi.repositories.EmploiTempsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,18 +15,24 @@ public class EmploiTempsService {
     @Autowired
     private EmploiTempsRepository emploiTempsRepository;
 
+    // =========================
+    // Récupérer les emplois par RH
+    // =========================
     public List<EmploiTemps> getEmploisByRh(String rhId) {
         return emploiTempsRepository.findByIdRh(rhId);
     }
 
-    // ============================
-    // CRÉER UN EMPLOI
-    // ============================
+    // =========================
+    // Créer un emploi
+    // =========================
     public EmploiTemps createEmploi(String rhId, EmploiTemps emploiTemps) {
         emploiTemps.setIdRh(rhId); // Associer l'emploi au RH connecté
         return emploiTempsRepository.save(emploiTemps);
     }
 
+    // =========================
+    // Supprimer les emplois d’un RH pour une tâche donnée
+    // =========================
     public boolean deleteEmploiByTache(String rhId, String tache) {
         // Récupérer tous les emplois de ce RH avec cette tâche
         List<EmploiTemps> emplois = emploiTempsRepository.findByIdRhAndTache(rhId, tache);
@@ -42,9 +46,10 @@ public class EmploiTempsService {
         emploiTempsRepository.deleteAll(emplois);
         return true;
     }
-    // -----------------------------
-    // Nouvelle méthode pour DTO
-    // -----------------------------
+
+    // =========================
+    // Récupérer les emplois d’un employé sous forme DTO simplifié
+    // =========================
     public List<EmploiTempsSimpleDTO> getEmploiByEmployeAsSimpleDTO(String employeId) {
         return emploiTempsRepository.findByEmployeId(employeId)
                 .stream()

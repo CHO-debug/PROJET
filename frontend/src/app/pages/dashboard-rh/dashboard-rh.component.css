@@ -1,0 +1,23 @@
+.rh-dashboard {
+  padding: 1rem;
+}
+
+.rh-dashboard .subtitle {
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.rh-dashboard .actions ul {
+  list-style: disc;
+  margin-left: 1.5rem;
+}
+
+.rh-dashboard .role {
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.rh-dashboard .hint {
+  margin-top: 1.5rem;
+  color: #999;
+}

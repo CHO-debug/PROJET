@@ -21,6 +21,8 @@ export class LoginComponent implements OnInit {
   success: string | null = null;
   response: LoginResponse | null = null;
 
+  visualSrc = 'https://www.greatplacetowork.in/wp-content/uploads/2024/01/Banner-Investing-in-people-1024x768.png';
+
   form!: FormGroup;
 
   constructor(
@@ -43,6 +45,17 @@ export class LoginComponent implements OnInit {
 
   get passwordCtrl() {
     return this.form.get('password');
+  }
+
+  onVisualError(): void {
+    if (this.visualSrc !== '/login-meeting.jpg' && this.visualSrc !== '/login-meeting.svg') {
+      this.visualSrc = '/login-meeting.jpg';
+      return;
+    }
+
+    if (this.visualSrc === '/login-meeting.jpg') {
+      this.visualSrc = '/login-meeting.svg';
+    }
   }
 
   submit(): void {

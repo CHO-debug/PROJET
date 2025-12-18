@@ -76,10 +76,39 @@ body {
 ========================= */
 .page {
   min-height: calc(100vh - 64px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   padding: 24px;
+}
+
+.shell {
+  width: min(980px, 100%);
+  border-radius: 18px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  box-shadow: 0 18px 45px rgba(17, 24, 39, 0.12);
+}
+
+.visual {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 55%, #a855f7 100%);
+  padding: 40px 36px;
+  display: grid;
+  align-items: center;
+}
+
+.visual-inner {
+  display: grid;
+  gap: 0;
+  align-content: center;
+}
+
+.visual-img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  border-radius: 16px;
+  filter: drop-shadow(0 18px 35px rgba(0, 0, 0, 0.25));
 }
 
 /* =========================
@@ -87,11 +116,10 @@ body {
 ========================= */
 .card {
   width: 100%;
-  max-width: 420px;
-  padding: 32px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 4px 10px rgba(0, 0, 0, 0.03);
+  max-width: none;
+  padding: 40px 34px;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.98);
   display: grid;
   gap: 18px;
 }
@@ -176,4 +204,28 @@ pre {
   white-space: pre-wrap;
   word-break: break-word;
   margin: 8px 0 0;
+}
+
+@media (max-width: 920px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .visual {
+    padding: 28px 22px;
+  }
+
+  .visual-img {
+    height: 210px;
+  }
+
+  .card {
+    padding: 32px 22px;
+  }
+}
+
+@media (max-width: 460px) {
+  .visual-img {
+    height: 170px;
+  }
 }

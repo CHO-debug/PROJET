@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,35 +24,31 @@ public class EmploiTempsController {
     private EmploiTempsService emploiTempsService;
 
     @Operation(summary = "Lister les plannings de l'employé connecté")
-    @GetMapping("/me")
-    public ResponseEntity<List<EmploiTempsSimpleDTO>> getMyEmploi(
-            @RequestHeader("X-User-Id") String employeId) {
-
-        List<EmploiTempsSimpleDTO> emplois = emploiTempsService.getEmploiByEmployeAsSimpleDTO(employeId);
-        return ResponseEntity.ok(emplois);
-    }
-    // ============================
-    // LISTER LES EMPLOIS CRÉÉS PAR LE RH
-    // ============================
-    // ============================
-// LISTER LES EMPLOIS CRÉÉS PAR LE RH
-// ============================
-    @GetMapping("/rh/me")
-    public ResponseEntity<List<RHEmploiDTO>> getEmploisByRh(
-            @RequestHeader("X-User-Id") String rhId) {
-
+    @GetMapping("/me/{id}") public ResponseEntity<List<EmploiTempsSimpleDTO>> getMyEmploi( @PathVariable String id) { List<EmploiTempsSimpleDTO> emplois = emploiTempsService.getEmploiByEmployeAsSimpleDTO(id);
+        return ResponseEntity.ok(emplois); }
+    @Operation(summary = "Lister les plannings des employés supervisés par le RH")
+    @GetMapping("/rh/{rhId}")
+    public ResponseEntity<List<RHEmploiDTO>> getEmploisByRh(@PathVariable("rhId") String rhId) {
+        // Récupérer les emplois des employés liés au RH
         List<EmploiTemps> emplois = emploiTempsService.getEmploisByRh(rhId);
 
+        // Vérifier si des emplois existent
+        if (emplois.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204 No Content
+        }
+
+        // Transformer les entités en DTO pour le frontend
         List<RHEmploiDTO> dtoList = emplois.stream()
                 .map(e -> new RHEmploiDTO(
-                        e.getDate().toString(),
+                        e.getDate() != null ? e.getDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) : "",
                         e.getHeure(),
                         e.getTache(),
                         e.getTaches(),
-                        e.getEmployeId() // on garde employeId tel quel
+                        e.getEmployeId()
                 ))
                 .collect(Collectors.toList());
 
+        // Retourner la liste avec statut 200 OK
         return ResponseEntity.ok(dtoList);
     }
 
@@ -89,19 +86,19 @@ public class EmploiTempsController {
 
 
 
-@DeleteMapping("/rh/delete")
-public ResponseEntity<String> deleteEmploiByTache(
-     @RequestHeader("X-User-Id") String rhId,
-       @RequestParam String tache) {
+    @DeleteMapping("/rh/delete")
+    public ResponseEntity<String> deleteEmploiByTache(
+            @RequestHeader("X-User-Id") String rhId,
+            @RequestParam String tache) {
 
-   boolean deleted = emploiTempsService.deleteEmploiByTache(rhId, tache);
+        boolean deleted = emploiTempsService.deleteEmploiByTache(rhId, tache);
 
-   if (deleted) {
-       return ResponseEntity.ok("Emploi supprimé avec succès");
+        if (deleted) {
+            return ResponseEntity.ok("Emploi supprimé avec succès");
 
-   } else {
-       return ResponseEntity.status(403).body("Impossible de supprimer cet emploi");
+        } else {
+            return ResponseEntity.status(403).body("Impossible de supprimer cet emploi");
+        }
     }
-}
 
 }
