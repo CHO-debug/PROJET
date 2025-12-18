@@ -2,8 +2,6 @@ package com.example.api_gateway.filter;
 
 import com.example.api_gateway.dto.GatewayErrorResponse;
 import io.jsonwebtoken.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -22,16 +20,25 @@ import java.time.Instant;
 
 @Component
 public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
-
-    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     private static final String JWT_COOKIE_NAME = "JWT";
     private static final String AUTH_PATH_PREFIX = "/auth";
     private static final String USER_ID_HEADER = "X-User-Id";
+    private static final String BEARER_PREFIX = "Bearer ";
 
     private final SecretKey secretKey;
 
     public JwtAuthenticationFilter(SecretKey secretKey) {
         this.secretKey = secretKey;
+    }
+
+    private String extractToken(ServerHttpRequest request) {
+        String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
+            return authHeader.substring(BEARER_PREFIX.length());
+        }
+
+        var cookies = request.getCookies().getFirst(JWT_COOKIE_NAME);
+        return cookies != null ? cookies.getValue() : null;
     }
 
     @Override
@@ -44,13 +51,10 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        // Lire le cookie JWT
-        var cookies = request.getCookies().getFirst(JWT_COOKIE_NAME);
-        if (cookies == null) {
-            return onUnauthorized(exchange, "JWT cookie manquant");
+        String token = extractToken(request);
+        if (token == null || token.isBlank()) {
+            return onUnauthorized(exchange, "JWT manquant (cookie JWT ou Authorization Bearer)");
         }
-
-        String token = cookies.getValue();
 
         try {
             // Valider le JWT

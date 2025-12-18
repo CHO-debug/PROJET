@@ -48,15 +48,14 @@ public class AbsenceController {
         return service.getAllAbsences();
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<List<AbsenceResponseDto>> getMyAbsences(
-            @RequestHeader("X-User-Id") String employeId
-    ) {
-        System.out.println("Employé ID reçu : " + employeId); // simple log pour vérifier l'ID
+    @GetMapping("/me/{id}")
+    public ResponseEntity<List<AbsenceResponseDto>> getMyAbsences(@PathVariable String id) {
+
         return ResponseEntity.ok(
-                service.getAbsencesByEmployeeForFrontend(employeId)
+                service.getAbsencesByEmployeeForFrontend(id)
         );
     }
+
     // -------------------------------------------------
     // DATA ANALYZER : Retourne JUSTIFIE / NON_JUSTIFIE
     // -------------------------------------------------
