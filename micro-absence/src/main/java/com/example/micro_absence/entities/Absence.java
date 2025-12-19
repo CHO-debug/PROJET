@@ -14,7 +14,8 @@ public class Absence {
     private String typeId;       // Référence à TypeAbsence
     private String employeId;    // Référence à Employé
     private String motif;        // Motif de l’absence
-    private int duree;           // Durée en jours
+    private int duree;
+    private String idRh;  // Durée en jours
 
 
     // Getters / Setters
@@ -35,6 +36,8 @@ public class Absence {
 
     public int getDuree() { return duree; }
     public void setDuree(int duree) { this.duree = duree; }
+    public String getIdRh() { return idRh; }
+    public void setIdRh(String idRh) { this.idRh = idRh; }
 
 
 }

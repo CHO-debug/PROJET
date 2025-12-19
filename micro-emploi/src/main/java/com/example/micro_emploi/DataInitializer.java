@@ -12,7 +12,7 @@ import java.util.Arrays;
 @Configuration
 public class DataInitializer {
 
-    @Bean
+    //  @Bean
     CommandLineRunner initDatabase(EmploiTempsRepository emploiTempsRepository) {
         return args -> {
 

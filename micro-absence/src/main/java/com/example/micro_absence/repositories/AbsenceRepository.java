@@ -11,7 +11,7 @@ public interface AbsenceRepository extends MongoRepository<Absence, String> {
 
     // Récupérer toutes les absences d’un employé
     List<Absence> findByEmployeId(String employeId);
-    // Récupérer les absences par l'ID du RH qui les a créées
+    List<Absence> findByIdRh(String idRh);
 
 
 }

@@ -6,18 +6,20 @@ public class AbsenceRhDto {
     private String dateInterval; // ex: "2025-12-16 à 2025-12-17"
     private String libelle;      // type d'absence: "Justifiée" / "Non Justifiée"
     private String motif;        // motif de l'absence
-    private int duree;           // durée en jours
+    private int duree;
+    private String idRh;         // ID du RH qui a créé l'absence
 
     // Constructeur vide
     public AbsenceRhDto() {}
 
     // Constructeur avec tous les champs
-    public AbsenceRhDto(String employeId, String dateInterval, String libelle, String motif, int duree) {
+    public AbsenceRhDto(String employeId, String dateInterval, String libelle, String motif, int duree, String idRh) {
         this.employeId = employeId;
         this.dateInterval = dateInterval;
         this.libelle = libelle;
         this.motif = motif;
         this.duree = duree;
+        this.idRh = idRh;
     }
 
     // Getters & Setters
@@ -35,4 +37,7 @@ public class AbsenceRhDto {
 
     public int getDuree() { return duree; }
     public void setDuree(int duree) { this.duree = duree; }
+
+    public String getIdRh() { return idRh; }
+    public void setIdRh(String idRh) { this.idRh = idRh; }
 }

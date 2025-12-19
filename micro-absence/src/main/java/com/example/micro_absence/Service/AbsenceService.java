@@ -1,7 +1,5 @@
 package com.example.micro_absence.Service;
 
-import com.example.micro_absence.Dto.AbsenceDto;
-import com.example.micro_absence.Dto.AbsenceDto;
 import com.example.micro_absence.Dto.AbsenceResponseDto;
 import com.example.micro_absence.entities.Absence;
 import com.example.micro_absence.entities.TypeAbsence;
@@ -11,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +17,7 @@ import java.util.List;
 public class AbsenceService {
 
     private final AbsenceRepository repo;
-    private final TypeAbsenceRepository typeRepo; // Pour le Data Analyzer
+    private final TypeAbsenceRepository typeRepo;
 
     // -------------------------------------------------
     // CREATE
@@ -51,6 +48,13 @@ public class AbsenceService {
     }
 
     // -------------------------------------------------
+    // READ : absences par RH
+    // -------------------------------------------------
+    public List<Absence> getAbsencesByRh(String rhId) {
+        return repo.findByIdRh(rhId);
+    }
+
+    // -------------------------------------------------
     // UPDATE
     // -------------------------------------------------
     public Absence updateAbsence(String id, Absence updated) {
@@ -60,6 +64,9 @@ public class AbsenceService {
         existing.setDate(updated.getDate());
         existing.setTypeId(updated.getTypeId());
         existing.setEmployeId(updated.getEmployeId());
+        existing.setMotif(updated.getMotif());
+        existing.setDuree(updated.getDuree());
+        existing.setIdRh(updated.getIdRh());
 
         return repo.save(existing);
     }
@@ -72,24 +79,21 @@ public class AbsenceService {
     }
 
     // -------------------------------------------------
-    // DATA ANALYZER : JUSTIFIE / NON_JUSTIFIE
+    // DTO pour le frontend
     // -------------------------------------------------
-
-    // Récupérer les absences pour le frontend (intervalle + libelle + motif + durée)
     public List<AbsenceResponseDto> getAbsencesByEmployeeForFrontend(String employeId) {
         List<Absence> absences = repo.findByEmployeId(employeId);
         List<AbsenceResponseDto> result = new ArrayList<>();
 
         for (Absence absence : absences) {
-            // Récupération du type d'absence
             TypeAbsence type = typeRepo.findById(absence.getTypeId())
-                    .orElseThrow(() -> new RuntimeException("TypeAbsence introuvable pour id " + absence.getTypeId()));
+                    .orElseThrow(() -> new RuntimeException(
+                            "TypeAbsence introuvable pour id " + absence.getTypeId()));
 
             AbsenceResponseDto dto = new AbsenceResponseDto();
-
-            LocalDate start = absence.getDate(); // LocalDate direct
-
+            LocalDate start = absence.getDate();
             int duree = absence.getDuree();
+
             if (duree > 1) {
                 LocalDate end = start.plusDays(duree - 1);
                 dto.setDateInterval(start + " à " + end);
@@ -106,7 +110,5 @@ public class AbsenceService {
 
         return result;
     }
-
-
 
 }
