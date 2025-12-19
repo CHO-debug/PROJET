@@ -72,12 +72,14 @@ public class RhController {
     public ResponseEntity<List<EmploiTempsDTO>> getEmploisByRh(@RequestHeader("X-User-Id") String rhId) {
         return ResponseEntity.ok(rhService.getEmploisByRh(rhId));
     }
-
-    @PostMapping("/emplois")
-    public ResponseEntity<EmploiTempsDTO> createEmploi(
-            @RequestHeader("X-User-Id") String rhId,
+    @PostMapping("/{rhId}/employe/{employeId}/emploi")
+    public ResponseEntity<EmploiTempsDTO> createEmploiPourEmploye(
+            @PathVariable String rhId,
+            @PathVariable String employeId,
             @RequestBody EmploiTempsDTO emploiTemps) {
-        return ResponseEntity.ok(rhService.createEmploi(rhId, emploiTemps));
+        // Appel au service pour créer l'emploi pour cet employé
+        EmploiTempsDTO created = rhService.createEmploi(rhId, emploiTemps);
+        return ResponseEntity.ok(created);
     }
 
 

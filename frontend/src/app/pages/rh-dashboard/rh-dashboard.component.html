@@ -1,0 +1,166 @@
+<div class="layout" [class.theme-dark]="theme === 'dark'" [class.sidebar-open]="sidebarOpen">
+  <div class="overlay" *ngIf="sidebarOpen" (click)="closeSidebar()"></div>
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-strong">HR</span><span class="brand-soft">MATE</span>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item" [class.active]="active === 'absences'" (click)="select('absences')">
+        <span class="nav-ico absences">📅</span>
+        <span class="nav-label">Mes absences</span>
+      </button>
+
+      <button class="nav-item" [class.active]="active === 'conges'" (click)="select('conges')">
+        <span class="nav-ico conges">🌴</span>
+        <span class="nav-label">Mes congés</span>
+      </button>
+
+      <button class="nav-item" [class.active]="active === 'emplois'" (click)="select('emplois')">
+        <span class="nav-ico emplois">💼</span>
+        <span class="nav-label">Emplois</span>
+      </button>
+
+      <button class="nav-item" [class.active]="active === 'calendrier'" (click)="select('calendrier')">
+        <span class="nav-ico calendrier">🗓️</span>
+        <span class="nav-label">Calendrier</span>
+      </button>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="topbar-btn" type="button" (click)="toggleSidebar()">☰</button>
+      <div class="topbar-title"></div>
+      <div class="topbar-actions">
+        <button class="topbar-theme" type="button" (click)="toggleTheme()">{{ theme === 'dark' ? '☀️' : '🌙' }}</button>
+        <button class="topbar-logout" type="button" (click)="logout()">Se déconnecter</button>
+      </div>
+    </header>
+
+    <section class="page">
+      <div class="page-card">
+        <div class="page-card-header">
+          <div class="page-card-heading">{{ pageTitle }}</div>
+
+          <div class="header-actions">
+            <button class="refresh" [disabled]="loading" (click)="loadEmplois(true)">Actualiser</button>
+            <button class="refresh" (click)="toggleCreateForm()">Créer un emploi</button>
+          </div>
+        </div>
+
+        <div class="create-area" *ngIf="showCreateForm">
+          <form [formGroup]="createForm" (ngSubmit)="submitCreateForm()">
+            <div class="form-row">
+              <label>Date</label>
+              <input type="date" formControlName="date" />
+            </div>
+
+            <div class="form-row">
+              <label>Heure</label>
+              <input type="text" placeholder="ex: 09:00 - 12:00" formControlName="heure" />
+            </div>
+
+            <div class="form-row">
+              <label>Tâche</label>
+              <input type="text" formControlName="tache" />
+            </div>
+
+            <div class="form-row">
+              <label>Détails (une tâche par ligne)</label>
+              <textarea rows="3" formControlName="tachesText" placeholder="Ligne 1\nLigne 2"></textarea>
+            </div>
+
+            <div class="form-row">
+              <label>Employé <span class="required">*</span></label>
+              <ng-container *ngIf="employees && employees.length > 0; else manualId">
+                <select formControlName="employeId" required>
+                  <option value="">-- Sélectionner --</option>
+                  <option *ngFor="let emp of employees" [value]="emp.id">{{ emp.name || emp.id }}</option>
+                </select>
+              </ng-container>
+
+              <ng-template #manualId>
+                <input type="text" required placeholder="ID employé (ex: 693d7...)" formControlName="employeId" />
+              </ng-template>
+
+              <div class="field-error" *ngIf="createForm.get('employeId')?.touched && createForm.get('employeId')?.invalid">
+                L'identifiant de l'employé est requis.
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="refresh" type="submit">Créer</button>
+              <button type="button" class="refresh" (click)="toggleCreateForm()">Annuler</button>
+            </div>
+
+            <div class="success" *ngIf="successMessage">{{ successMessage }}</div>
+          </form>
+        </div>
+
+        <div class="state error" *ngIf="error">{{ error }}</div>
+
+        <div class="state" *ngIf="!error && (!emplois || emplois.length === 0)">Aucun emploi trouvé.</div>
+
+        <div class="list" *ngIf="!error && emplois && emplois.length">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Heure</th>
+                  <th>Tâche</th>
+                  <th>Détails (tâches)</th>
+                  <th>Employé</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let e of emplois">
+                  <td>{{ e['date'] || '-' }}</td>
+                  <td>{{ e['heure'] || '-' }}</td>
+                  <td>{{ e['tache'] || '-' }}</td>
+                  <td>
+                    <ul *ngIf="(e['taches']?.length ?? 0) > 0; else noTasks">
+                      <li *ngFor="let t of e['taches']">{{ t }}</li>
+                    </ul>
+                    <ng-template #noTasks>-</ng-template>
+                  </td>
+                  <td>{{ e['employeId'] || '-' }}</td>
+                  <td class="actions-cell">
+                    <button
+                      class="btn-delete"
+                      type="button"
+                      title="DELETE request to /emplois/{emploiId}"
+                      aria-label="Supprimer emploi"
+                      (click)="promptDelete(e)">
+                      🗑️ <span class="btn-text">Supprimer</span>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete confirmation modal -->
+      <div class="modal-overlay" *ngIf="showDeleteModal">
+        <div class="modal">
+          <div class="modal-header">Confirmer la suppression</div>
+          <div class="modal-body">
+            <p>Voulez-vous vraiment supprimer cet emploi ?</p>
+            <p *ngIf="pendingDelete"><strong>{{ pendingDelete.date || '-' }} — {{ pendingDelete.tache || '-' }}</strong></p>
+            <p class="muted">Cette action est irréversible.</p>
+          </div>
+          <div class="modal-actions">
+            <button class="btn-cancel" type="button" (click)="cancelDelete()">Annuler</button>
+            <button class="btn-delete-confirm" type="button" (click)="confirmDelete()">Supprimer</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+</div>

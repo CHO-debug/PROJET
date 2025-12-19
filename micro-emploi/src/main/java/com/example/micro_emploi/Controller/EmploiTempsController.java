@@ -8,9 +8,12 @@ import com.example.micro_emploi.services.EmploiTempsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,19 +31,19 @@ public class EmploiTempsController {
         return ResponseEntity.ok(emplois); }
     @Operation(summary = "Lister les plannings des employés supervisés par le RH")
     @GetMapping("/rh/{rhId}")
-    public ResponseEntity<List<RHEmploiDTO>> getEmploisByRh(@PathVariable("rhId") String rhId) {
-        // Récupérer les emplois des employés liés au RH
+    public ResponseEntity<List<RHEmploiDTO>> getEmploisByRh(
+            @PathVariable String rhId) {
+
         List<EmploiTemps> emplois = emploiTempsService.getEmploisByRh(rhId);
 
-        // Vérifier si des emplois existent
         if (emplois.isEmpty()) {
-            return ResponseEntity.noContent().build(); // 204 No Content
+            return ResponseEntity.noContent().build();
         }
 
-        // Transformer les entités en DTO pour le frontend
         List<RHEmploiDTO> dtoList = emplois.stream()
                 .map(e -> new RHEmploiDTO(
-                        e.getDate() != null ? e.getDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) : "",
+                        e.getId(),
+                        e.getDate() != null ? e.getDate().toString() : "",
                         e.getHeure(),
                         e.getTache(),
                         e.getTaches(),
@@ -48,57 +51,52 @@ public class EmploiTempsController {
                 ))
                 .collect(Collectors.toList());
 
-        // Retourner la liste avec statut 200 OK
         return ResponseEntity.ok(dtoList);
     }
 
-    // ============================
-// CRÉER UN EMPLOI POUR UN EMPLOYÉ
-// ============================
-    @PostMapping("/rh/create")
-    public ResponseEntity<RHEmploiDTO> createEmploi(
-            @RequestHeader("X-User-Id") String rhId,
+    @PostMapping("/rh/{rhId}/employe/{employeId}/emploi")
+    public ResponseEntity<RHEmploiDTO> createEmploiByRh(
+            @PathVariable String rhId,
+            @PathVariable String employeId,
             @RequestBody CreateEmploiDTO dto) {
 
-        // Mapper DTO vers entité
-        EmploiTemps emploiTemps = new EmploiTemps();
-        emploiTemps.setDate(dto.getDate());
-        emploiTemps.setHeure(dto.getHeure());
-        emploiTemps.setTache(dto.getTache());
-        emploiTemps.setTaches(dto.getTaches());
-        emploiTemps.setEmployeId(dto.getEmployeId());
-        emploiTemps.setIdRh(rhId); // Lier automatiquement le RH
-        emploiTemps.setId(null);    // ID généré par MongoDB
+        EmploiTemps emploi = new EmploiTemps();
+        emploi.setDate(dto.getDate());
+        emploi.setHeure(dto.getHeure());
+        emploi.setTache(dto.getTache());
+        emploi.setEmployeId(employeId);
 
-        EmploiTemps created = emploiTempsService.createEmploi(rhId, emploiTemps);
+        EmploiTemps created = emploiTempsService.createEmploi(rhId, emploi);
 
-        // Mapper vers DTO de sortie
         RHEmploiDTO response = new RHEmploiDTO(
-                created.getDate().toString(),
+
+                created.getDate() != null ? created.getDate().toString() : "",
                 created.getHeure(),
                 created.getTache(),
                 created.getTaches(),
                 created.getEmployeId()
         );
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
 
 
-    @DeleteMapping("/rh/delete")
-    public ResponseEntity<String> deleteEmploiByTache(
-            @RequestHeader("X-User-Id") String rhId,
-            @RequestParam String tache) {
+    @Operation(summary = "Supprimer un emploi d'un employé")
+    @DeleteMapping("/{emploiId}")
+    public ResponseEntity<Void> deleteEmploi(
 
-        boolean deleted = emploiTempsService.deleteEmploiByTache(rhId, tache);
+            @PathVariable String emploiId) {
+
+        boolean deleted = emploiTempsService.deleteEmploi(emploiId);
 
         if (deleted) {
-            return ResponseEntity.ok("Emploi supprimé avec succès");
-
+            return ResponseEntity.noContent().build();
         } else {
-            return ResponseEntity.status(403).body("Impossible de supprimer cet emploi");
+            return ResponseEntity.notFound().build();
         }
     }
 
 }
+
+

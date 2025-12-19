@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,7 +20,8 @@ public class EmploiTempsService {
     // Récupérer les emplois par RH
     // =========================
     public List<EmploiTemps> getEmploisByRh(String rhId) {
-        return emploiTempsRepository.findByIdRh(rhId);
+        List<EmploiTemps> byIdRh = emploiTempsRepository.findByIdRh(rhId);
+        return byIdRh;
     }
 
     // =========================
@@ -55,11 +57,26 @@ public class EmploiTempsService {
                 .stream()
                 .map(e -> {
                     EmploiTempsSimpleDTO dto = new EmploiTempsSimpleDTO();
-                    dto.setDate(e.getDate());
-                    dto.setHeure(e.getHeure());
-                    dto.setTache(e.getTache());
+                    dto.setDate(e.getDate());   // LocalDate → LocalDate, ok
+                    dto.setHeure(e.getHeure()); // String
+                    dto.setTache(e.getTache()); // String
                     return dto;
                 })
                 .collect(Collectors.toList());
     }
+    public boolean deleteEmploi( String emploiId) {
+        // Récupérer l'emploi par son id
+        Optional<EmploiTemps> emploiOpt = emploiTempsRepository.findById(emploiId);
+        List<EmploiTemps> emploes = emploiTempsRepository.findAll();
+
+        if (emploiOpt.isPresent()) {
+            emploiTempsRepository.delete(emploiOpt.get());
+
+            return true;
+        } else {
+            System.out.println("Emploi non trouvé : " + emploiId);
+            return false;
+        }
+    }
+
 }

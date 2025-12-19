@@ -82,6 +82,7 @@ export class LoginComponent implements OnInit {
 
         const token = res.token;
         const id = res.id;
+        const role = res.role;
 
         if (token) {
           this.tokenService.setToken(token);
@@ -90,8 +91,18 @@ export class LoginComponent implements OnInit {
             this.tokenService.setUserId(id);
           }
 
+          if (role) {
+            this.tokenService.setRole(role);
+          }
+
           this.success = 'Connexion réussie.';
-          this.router.navigateByUrl('/dashboard');
+
+          const isRh = role ? role.toString().toLowerCase().includes('rh') : false;
+          if (isRh) {
+            this.router.navigateByUrl('/dashboard/rh');
+          } else {
+            this.router.navigateByUrl('/dashboard');
+          }
         } else {
           this.success = 'Connexion réussie, mais aucun token trouvé.';
         }

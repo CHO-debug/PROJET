@@ -7,6 +7,7 @@ export class TokenService {
 
   private readonly TOKEN_KEY = 'jwt_token';
   private readonly USER_ID_KEY = 'user_id';
+  private readonly ROLE_KEY = 'user_role';
 
   // 🔐 TOKEN
   setToken(token: string): void {
@@ -21,7 +22,7 @@ export class TokenService {
     localStorage.removeItem(this.TOKEN_KEY);
   }
 
-  // 👤 USER ID  ✅ AJOUT ICI
+  // 👤 USER ID
   setUserId(id: string): void {
     localStorage.setItem(this.USER_ID_KEY, id);
   }
@@ -34,6 +35,19 @@ export class TokenService {
     localStorage.removeItem(this.USER_ID_KEY);
   }
 
+  // 🛡️ ROLE
+  setRole(role: string): void {
+    localStorage.setItem(this.ROLE_KEY, role);
+  }
+
+  getRole(): string | null {
+    return localStorage.getItem(this.ROLE_KEY);
+  }
+
+  clearRole(): void {
+    localStorage.removeItem(this.ROLE_KEY);
+  }
+
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
@@ -41,5 +55,6 @@ export class TokenService {
   clearAll(): void {
     this.clearToken();
     this.clearUserId();
+    this.clearRole();
   }
 }

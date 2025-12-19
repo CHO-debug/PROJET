@@ -1,9 +1,18 @@
 package com.example.micro_emploi.dto;
 
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import java.util.List;
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 // DTO pour le frontend
 public class RHEmploiDTO {
+    private String id ;
     private String date;
     private String heure;
     private String tache;
@@ -18,10 +27,4 @@ public class RHEmploiDTO {
         this.employeId = employeId;
     }
 
-    // getters
-    public String getDate() { return date; }
-    public String getHeure() { return heure; }
-    public String getTache() { return tache; }
-    public List<String> getTaches() { return taches; }
-    public String getEmployeId() { return employeId; }
 }
